@@ -65,8 +65,85 @@ int number_of_intersection_ray_against_quadratic_bezier(
     const Eigen::Vector2f &pc,
     const Eigen::Vector2f &pe) {
   // comment out below to do the assignment
-  return number_of_intersection_ray_against_edge(org, dir, ps, pe);
+  //return number_of_intersection_ray_against_edge(org, dir, ps, pe);
   // write some code below to find the intersection between ray and the quadratic
+
+  // Harald Olin: To solve this equation I will use the expression P(t)=q+sv, where P(t) is the cubic bezier curve
+  // and q+sv is the ray with origin q, direction v and scale s.
+  //  If we start by multiplying LHS and RHS with a vector "n" perpendicular to "v" we get the following expression:
+  // P(t)*n=q, which will turn out to nothing other than a 2nd degree polynome which we can solve with the pq-formula
+
+    // Setting up the perpendicular vector
+    int number_of_intersections = 0;
+    auto dir_perp= dir;
+    dir_perp[0] = -1*dir[1];
+    dir_perp[1] = dir[0]; 
+    // Calculating all the scalar multiplications on the LHS  P(t)*n
+    auto a = ps[0]*dir_perp[0]+ps[1]*dir_perp[1];
+    auto b = pc[0]*dir_perp[0]+pc[1]*dir_perp[1];
+    auto c = pe[0]*dir_perp[0]+pe[1]*dir_perp[1];
+    auto d = org[0]*dir_perp[0]+org[1]*dir_perp[1];
+
+    // we then get the polynom a*(1-t)^2+2b(1-t)t+ct^2=d
+    // which we can simplyfy to t^2(a-2b+c)+t(-2a+2b)+(a-d)=0
+    // now we can divde with the coefficent for t^2 and solve with pq-formula.
+    auto denominator = (a-2*b+c);
+      // edge case handling division by zero
+      if( denominator == 0){
+        //solve linear equation t = -(a-d)/(-2a+2b)
+        if((-2*a+2*b)!=0){
+            auto t = -(a-d)/(-2*a+2*b);
+            auto p_t = (1-t)*(1-t)*ps+2*t*(1-t)*pc+t*t*pe;
+            auto s_tx = (p_t[0]-org[0])/dir[0];
+            auto s_ty = (p_t[1]-org[1])/dir[1];
+            if(s_tx == s_ty && s_tx>0){
+              return 1;
+            } 
+        }
+        else{
+          // we have the situation (a-d)=0 which says nothing about t
+          return 0;
+        }
+      }
+      // setting up pq-formula
+      else{
+        auto p = (-2*a+2*b)/denominator;
+        auto q = (a-d)/denominator;
+        auto under_root = ((p*p)/4)-q;
+        if(under_root<0){
+          // if underroot <0 we have a undefined case, which implies no intersection
+          return 0;
+        }
+        // calculating both t
+        auto t1 = -1*p/2 + sqrt(under_root);
+        auto t2 = -1*p/2 - sqrt(under_root);
+        // make sure that 0<t1<1
+        if(t1>0 && t1<1){
+            // testing if the scale factor s we get from t1 is reasonable
+            auto p_t1 = (1-t1)*(1-t1)*ps+2*t1*(1-t1)*pc+t1*t1*pe;
+            auto s_t1x = (p_t1[0]-org[0])/dir[0];
+            auto s_t1y = (p_t1[1]-org[1])/dir[1];
+            // checking if both s are the same, special operation for "float" s-s=0 and that s is nonnegative
+            float epsilon = 1e-4;
+            if( abs(s_t1x-s_t1y) < epsilon && s_t1x>0){
+              number_of_intersections +=1;
+              
+            } 
+        }
+        if(t2>0 && t2<1){
+          // testing if the scale factor s we get from t2 is reasonable
+          auto p_t2 = (1-t2)*(1-t2)*ps+2*t2*(1-t2)*pc+t2*t2*pe;
+          auto s_t2x = (p_t2[0]-org[0])/dir[0];
+          auto s_t2y = (p_t2[1]-org[1])/dir[1];
+          // checking if both s are the same, special operation for "float" s-s=0 and that s is nonnegative
+          float epsilon = 1e-4;
+          if( abs(s_t2x-s_t2y) < epsilon && s_t2x>0){
+            number_of_intersections +=1;
+          }  
+        }
+        return number_of_intersections;
+      }
+      return number_of_intersections;
 }
 
 int main() {
