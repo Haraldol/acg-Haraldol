@@ -63,13 +63,34 @@ void draw_3d_triangle_with_texture(
       const float area1 = (r2 - s).cross(r0 - s);
       const float area2 = (r0 - s).cross(r1 - s);
       if (area0 < 0. || area1 < 0. || area2 < 0.) { continue; } // the pixel is outside the triangle (r0, r1, r2)
-      Eigen::Vector3f bc = Eigen::Vector3f(area0, area1, area2) / (area0 + area1 + area2); // barycentric coordinate on screen
+      //Eigen::Vector3f bc = Eigen::Vector3f(area0, area1, area2) / (area0 + area1 + area2); // barycentric coordinate on screen
       // `bc` gives the barycentric coordinate **on the screen** and it is distorted.
       // Compute the barycentric coordinate ***on the 3d triangle** below that gives the correct texture mapping.
       // (Hint: formulate a linear system with 4x4 coefficient matrix and solve it to get the barycentric coordinate)
       Eigen::Matrix4f coeff;
       Eigen::Vector4f rhs;
 
+
+      // For this assignment we are gonna take advantage of:
+      // (x,y,1) <-- proportional to --> (x',y',w) = ... = (Ha)Alpha+(Hb)Beta+(Hc)Gamma
+      // First realisation:
+      //      We have x=s[0] and y=s[1], our coordinates in the 2D triangle.
+      //      Then  utilise x * w = x' and y * w = y'.
+      // Second realisation: 
+      //      From "main" we see that q0-q2 are written in homogenous coordinates, which gives us that
+      //      (Ha) = q0, (Hb) = q1, (Hc) = q2
+      // These two realisations together with the fact that, Alpha + Beta + Gamma = 1
+      // Gives us a set of 4 equations with, Alpha, Beta, Gamma and w are the unknown.
+      // We can now formulated a linear system with 4x4 coefficient matrix and solve it to get the barycentric coordinates  
+      coeff << q0[0], q1[0], q2[0], -s[0],
+               q0[1], q1[1], q2[1], -s[1],
+               q0[3], q1[3], q2[3], -1.0f,
+               1.0f , 1.0f , 1.0f , 0.0f;
+
+      rhs << 0.0f,0.0f,0.0f,1.0f;
+      
+      Eigen::Vector4f bc = coeff.colPivHouseholderQr().solve(rhs);
+      
       // do not change below
       auto uv = uv0 * bc[0] + uv1 * bc[1] + uv2 * bc[2]; // uv coordinate of the pixel
       // compute pixel coordinate of the texture
