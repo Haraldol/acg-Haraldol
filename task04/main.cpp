@@ -42,7 +42,7 @@ int main() {
   // bounding box
   auto aabb_max = vtx2xyz.rowwise().maxCoeff();
   auto aabb_min = vtx2xyz.rowwise().minCoeff();
-  auto aabb_center = (aabb_min + aabb_max) * 0.5f; // center of the bounding box
+  auto aabb_center =(aabb_min + aabb_max) * 0.5f; // center of the bounding box
   auto aabb_size = (aabb_max - aabb_min).maxCoeff(); // size of the bounding box
   // normalize coordinate
   vtx2xyz = (vtx2xyz.colwise() - aabb_center) / aabb_size * 1.3;
@@ -51,7 +51,7 @@ int main() {
   // compute normals at vertices
   const auto vtx2normal = acg::vertex_normals_of_triangle_mesh(tri2vtx, vtx2xyz);
 
-  if (!glfwInit()) { exit(EXIT_FAILURE); }
+  if (!glfwInit()) { std::cout << "debug1"; exit(EXIT_FAILURE); }
   // set OpenGL's version (note: ver. 2.1 is very old, but I chose because it's simple)
   ::glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
   ::glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
@@ -59,11 +59,13 @@ int main() {
   GLFWwindow *window = ::glfwCreateWindow(500, 500, "task04", nullptr, nullptr);
   if (!window) { // exit if failed to create window
     ::glfwTerminate();
+    std::cout << "debug2";
     exit(EXIT_FAILURE);
   }
   ::glfwMakeContextCurrent(window); // working on this window
   if (!gladLoadGL()) {     // glad: load all OpenGL function pointers
     std::cout << "Something went wrong in loading OpenGL functions!\n" << std::endl;
+    std::cout << "debug3";
     exit(-1);
   }
 

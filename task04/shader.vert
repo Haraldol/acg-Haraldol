@@ -24,9 +24,19 @@ void main()
         // make sure the occlusion is correctly computed.
         // the mirror is behind the armadillo, so the reflected image should be behind the armadillo.
         // furthermore, make sure the occlusion is correctly computed for the reflected image.
-        //x0 = ???
-        //y0 = ???
-        //z0 = ???
+        // Here we calculate the reflection of a point in a plane by doing the following:
+        // searching for the scale value t = d-e/|n| 
+        // then 
+        float scalar_nrm_org   = nrm[0]*org[0] + nrm[1]*org[1] + nrm[2]*org[2];
+        float scalar_nrm_point = nrm[0]*x0 + nrm[1]*y0 + nrm[2]*z0;
+        float scalar_nrm_nrm   = nrm[0]*nrm[0] + nrm[1]*nrm[1] + nrm[2]*nrm[2];
+        float distance = scalar_nrm_org - scalar_nrm_point;
+        float scale_factor_t   = distance/scalar_nrm_nrm; // Distance divided by normal
+        x0 = (x0 + 2*scale_factor_t*nrm[0]);
+        y0 = (y0 + 2*scale_factor_t*nrm[1]);
+        // The z0 coordiantes scale factor is not multiplied by 2, because we want to make it appear as close to the mirror as possible
+        // Otherwise some parts of the armadillo renders outside the bounding box.
+        z0 = (z0 + 1*scale_factor_t*nrm[2]); 
     }
     // do not edit below
 
