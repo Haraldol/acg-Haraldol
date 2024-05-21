@@ -26,6 +26,21 @@ float sdSphere( vec3 p, float s )
   return length(p)-s;
 }
 
+// copied functions from: https://iquilezles.org/articles/distfunctions/
+float opUnion( float d1, float d2 )
+{
+    return min(d1,d2);
+}
+float opSubtraction( float d1, float d2 )
+{
+    return max(-d1,d2);
+}
+float opIntersection( float d1, float d2 )
+{
+    return max(d1,d2);
+}
+
+
 // here is the parameter use to draw the objects
 float len_cylinder = 0.8; // length of the cylinder
 float rad_cylinder = 0.45; // radius of the cylinder
@@ -37,14 +52,72 @@ float SDF(vec3 pos)
 {
   float d0 = sdCappedCylinder(pos, len_cylinder, rad_cylinder);
   // write some code to combine the signed distance fields above to design the object described in the README.md
-  return d0; // comment out and define new distance
+  vec3 d1_pos;
+  vec3 d2_pos;
+
+  //Positions for the cylinder shifted 90degrees around the z-axis, making it "standing" up.
+  d1_pos[0] = pos[1];
+  d1_pos[1] = pos[2]; 
+  d1_pos[2] = pos[0];
+  float d1 = sdCappedCylinder(d1_pos, len_cylinder,rad_cylinder);
+  //Positions for the cylinder shifted 90degrees around the y-axis.
+  d2_pos[0] = pos[1];
+  d2_pos[1] = pos[0];
+  d2_pos[2] = pos[2];
+  float d2 = sdCappedCylinder(d2_pos, len_cylinder,rad_cylinder);
+  // Adding the cylinders
+  float union_2_cylinder = opUnion(d0,d1);
+  float union_3_cylinder = opUnion(union_2_cylinder,d2);
+  //  sphere 
+  float sphere = sdSphere( pos, rad_sphere);
+  // the box
+  vec3 box_outer_coordinate = vec3(box_size,box_size,box_size);
+  float box = sdBox( pos, box_outer_coordinate);
+
+  // Intersection of box and sphere
+  float sphere_box_Intersection = opIntersection( sphere, box );
+
+  // subtraction of both
+  float final = opSubtraction(union_3_cylinder,sphere_box_Intersection);
+  return final;
+
 }
 
 /// RGB color at the position `pos`
 vec3 SDF_color(vec3 pos)
 {
   // write some code below to return color (RGB from 0 to 1) to paint the object describe in README.md
-  return vec3(0., 1., 0.); // comment out and define new color
+  float d0 = sdCappedCylinder(pos, len_cylinder, rad_cylinder);
+  vec3 d1_pos;
+  vec3 d2_pos;
+  //Positions for the cylinder shifted 90degrees around the z-axis, making it "standing" up.
+  d1_pos[0] = pos[1];
+  d1_pos[1] = pos[2]; 
+  d1_pos[2] = pos[0];
+  float d1 = sdCappedCylinder(d1_pos, len_cylinder,rad_cylinder);
+  //Positions for the cylinder shifted 90degrees around the y-axis.
+  d2_pos[0] = pos[1];
+  d2_pos[1] = pos[0];
+  d2_pos[2] = pos[2];
+  float d2 = sdCappedCylinder(d2_pos, len_cylinder,rad_cylinder);
+  // Adding the cylinders
+  float union_2_cylinder = opUnion(d0,d1);
+  float union_3_cylinder = opUnion(union_2_cylinder,d2);
+  float sphere = sdSphere( pos, rad_sphere);
+  vec3 box_outer_coordinate = vec3(box_size,box_size,box_size);
+  float box = sdBox( pos, box_outer_coordinate);
+  // Intersection of box and sphere
+  float sphere_box_Intersection = opIntersection( sphere, box );
+
+  if(sphere_box_Intersection<0){
+    return vec3(0., 1., 0.);
+  }
+  else if(box<sphere){
+      return vec3(0., 0., 1.);
+  }
+  else{
+    return vec3(1.,0.,0.);
+  }
 }
 
 uniform float time; // current time given from CPU
