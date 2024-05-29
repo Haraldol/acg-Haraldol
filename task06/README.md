@@ -37,10 +37,12 @@ Comment out the brute force intersection computation (from `line#146` to `line#1
 The program output the computation time. Fill the table below to compare the timing before/after the acceleraion. Please make sure that you build the code **with release mode**
 
 
+### Note from author Harald: 
+For some reason my code when running on my laptop didn't get much faster then this with the BVH. Would expect it to run at atleast sub 500ms. But i think my implementation is right. 
 
 | brute force | BVH    |
 | ----------- | ------ |
-| ??? ms      | ??? ms |
+| 5500 ms      |  3800ms|
 
 
 
