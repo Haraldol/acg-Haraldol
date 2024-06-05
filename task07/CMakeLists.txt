@@ -7,6 +7,8 @@ enable_language(CXX)  # we are using C++
 set(CMAKE_CXX_STANDARD 17)  # we are using C++ 17
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)  # we are using STL library
 
+
+
 #############################
 # set project name
 
@@ -33,3 +35,7 @@ add_executable(${PROJECT_NAME}
 
 target_link_libraries(${PROJECT_NAME}
 )
+
+message(STATUS "Current build type: ${CMAKE_BUILD_TYPE}")
+message(STATUS "C++ Compiler: ${CMAKE_CXX_COMPILER}")
+message(STATUS "C++ Flags: ${CMAKE_CXX_FLAGS}")
