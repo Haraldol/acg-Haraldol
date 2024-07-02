@@ -140,6 +140,30 @@ class HelloWorld(mglw.WindowConfig):
         # spsolve: https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.linalg.spsolve.html#scipy.sparse.linalg.spsolve
 
 
+        d = self.matrix_fix
+        l = self.matrix_laplace
+        x_ini = self.vtx2xyz_ini
+        x_def = self.vtx2xyz_def
+
+        a = d + l 
+        b = l.dot(x_ini) + d.dot(x_def)
+
+        #problem 2
+        #for coordinates in range(3):
+        #    self.vtx2xyz_def[:,coordinates] = spsolve(a,b[:,coordinates])
+
+        # problem 3
+        d = self.matrix_fix
+        l = self.matrix_bilaplace
+        x_ini = self.vtx2xyz_ini
+        x_def = self.vtx2xyz_def
+
+        a = d + l 
+        b = l.dot(x_ini) + d.dot(x_def)
+
+        for coordinates in range(3):
+            self.vtx2xyz_def[:,coordinates] = spsolve(a,b[:,coordinates])
+
         # do not edit beyond here
         # above: deformation
         # ---------------------
